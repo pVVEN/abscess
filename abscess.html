@@ -1,0 +1,388 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+	<title>Abscess</title>
+    <script src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+/*
+- reset steps remaining (and possibly other stuff) when win/lose
+- underline for txt_title and txt_creditsTitle
+- black rectangle border for group_cells
+- tweens for vials
+- something to make sure the vial you click is the one you want? turn off other vials when hovering over one?
+- credits screen
+- moving animation for monitor screen - look at masking
+- fix fonts/font sizes
+- mobile version - scaling?
+*/
+
+var game = new Phaser.Game(600, 350, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var colorsArray = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple'];
+var cellArray = {};
+var score = 0;
+var ingame = false;
+var gameSize, lengthCellSide, numPerSide, totalSteps, numStepsRemaining, numTilesRemaining;
+
+var btn_new, btn_reset, btn_close, btn_help, btn_easy, btn_medium, btn_hard;
+var vial_red, vial_orange, vial_yellow, vial_green, vial_teal, vial_blue, vial_purple;
+var txt_title, txt_score, txt_win, txt_playAgain;
+var group_cells, group_menu, group_menuSubgroup, group_menuCredits;
+
+var Tile = function(game, x, y, img, color, frame, name)
+{
+    Phaser.Sprite.call(this, game, 0, 0, img, frame);
+    this.x = x;
+    this.y = y;
+    this.key = name;
+    this.name = name;
+    this.color = color;
+    this.checked = false;
+}
+Tile.prototype = Object.create(Phaser.Sprite.prototype);
+Tile.prototype.constructor = Tile;
+
+function preload()
+{
+    game.load.image('menu', 'img/menu.png');
+    game.load.image('monitor', 'img/monitor.png');
+    game.load.image('monitor_screen', 'img/monitor_screen.png');
+    game.load.image('muscle', 'img/muscle.png');
+    game.load.image('vial_blue', 'img/vial_blue.png');
+    game.load.image('vial_green', 'img/vial_green.png');
+    game.load.image('vial_orange', 'img/vial_orange.png');
+    game.load.image('vial_purple', 'img/vial_purple.png');
+    game.load.image('vial_red', 'img/vial_red.png');
+    game.load.image('vial_teal', 'img/vial_teal.png');
+    game.load.image('vial_yellow', 'img/vial_yellow.png');
+    game.load.image('whitebloodcells', 'img/whitebloodcells.png');
+    game.load.spritesheet('btn_close', 'img/btn_close.png', 78, 37);
+    game.load.spritesheet('btn_easy', 'img/btn_easy.png', 78, 37);
+    game.load.spritesheet('btn_hard', 'img/btn_hard.png', 78, 37);
+    game.load.spritesheet('btn_help', 'img/btn_help.png', 30, 30);
+    game.load.spritesheet('btn_medium', 'img/btn_medium.png', 92, 37);
+    game.load.spritesheet('btn_new', 'img/btn_new.png', 94, 72);
+    game.load.spritesheet('btn_reset', 'img/btn_reset.png', 122, 84);
+    game.load.spritesheet('cells12', 'img/cells12.png', 12, 12);
+    game.load.spritesheet('cells16', 'img/cells16.png', 16, 16);
+    game.load.spritesheet('cells24', 'img/cells24.png', 24, 24);
+
+    game.load.image('screenshot', 'img/screenshot.png');
+}
+
+function create()
+{
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    game.add.sprite(0, 0, 'muscle');
+    game.add.sprite(0, 0, 'monitor');
+    game.add.sprite(24, 15, 'monitor_screen');
+    txt_score = game.add.text(165, 110, "00/00", { fontSize: '16px', fill: '#00FFCC' });
+
+    vial_red = game.add.button(31, 183, 'vial_red', pickedColor, this);
+    vial_orange = game.add.button(59, 183, 'vial_orange', pickedColor, this);
+    vial_yellow = game.add.button(87, 183, 'vial_yellow', pickedColor, this);
+    vial_green = game.add.button(115, 183, 'vial_green', pickedColor, this);
+    vial_teal = game.add.button(143, 183, 'vial_teal', pickedColor, this);
+    vial_blue = game.add.button(171, 183, 'vial_blue', pickedColor, this);
+    vial_purple = game.add.button(199, 183, 'vial_purple', pickedColor, this);
+
+    btn_new = game.add.button(61, 317, 'btn_new', clickedNew, this, 1, 0, 2);
+    btn_new.anchor.setTo(0.5, 0.5);
+    btn_reset = game.add.button(193, 317, 'btn_reset', clickedReset, this, 1, 0, 2);
+    btn_reset.anchor.setTo(0.5, 0.5);
+
+    game.add.sprite(254, 4, 'whitebloodcells');
+
+    group_cells = game.add.group();
+    group_cells.x = 256;
+    group_cells.y = 6;
+
+    // NEED A BLACK RECTANGLE BORDER TO GO OVER THE CELLS GROUP
+
+
+    group_menu = game.add.group();
+    group_menuSubgroup = game.add.group();
+    group_menuCredits = game.add.group();
+
+    var bmd_menuBG = game.add.bitmapData(600, 350);
+    bmd_menuBG.ctx.beginPath();
+    bmd_menuBG.ctx.rect(0, 0, 600, 350);
+    bmd_menuBG.ctx.fillStyle = '#000';
+    bmd_menuBG.ctx.fill();
+    var spr_menuBG = game.add.sprite(0, 0, bmd_menuBG);
+    spr_menuBG.alpha = 0.5;
+
+    var spr_menuMonitor = game.add.sprite(300, 175, 'menu');
+    spr_menuMonitor.anchor.setTo(0.5, 0.5);
+
+    txt_title = game.add.text(300, 83, 'ABSCESS', { fontSize: '24px', fill: '#00FFCC', align: 'center' });
+    txt_title.anchor.setTo(0.5, 0.5);
+    // NEED A BAR GOING UNDER THE TEXT FOR AN UNDERLINE
+
+    txt_win = game.add.text(300, 133, "Choose Difficulty", { fontSize: '32px', fill: '#FF6600', align: 'center' });
+    txt_win.anchor.setTo(0.5, 0.5);
+    txt_playAgain = game.add.text(300, 198, 'New game?', { fontSize: '16px', fill: '#00FFCC', align: 'center' });
+    txt_playAgain.anchor.setTo(0.5, 0.5);
+
+    btn_help = game.add.button(425, 85, 'btn_help', clickedHelp, this, 1, 0, 2);
+    btn_help.anchor.setTo(0.5, 0.5);
+    btn_easy = game.add.button(195, 238, 'btn_easy', clickedEasy, this, 1, 0, 2);
+    btn_easy.anchor.setTo(0.5, 0.5);
+    btn_medium = game.add.button(295, 238, 'btn_medium', clickedMedium, this, 1, 0, 2);
+    btn_medium.anchor.setTo(0.5, 0.5);
+    btn_hard = game.add.button(395, 238, 'btn_hard', clickedHard, this, 1, 0, 2);
+    btn_hard.anchor.setTo(0.5, 0.5);
+
+    var txt_creditsTitle = game.add.text(300, 83, "ABSCESS", { fontSize: '24px', fill: '#00FFCC', align: 'center' });
+    var txt_credits = game.add.text(300, 133, "Abscess is (C)\n2011 by Owen\nMcNamara", { fontSize: '16px', fill: '#00FFCC', align: 'center' });
+    var txt_creditsLink = game.add.text(300, 198, "http://www.owencm.com", { fontSize: '16px', align: 'center' });
+    btn_close = game.add.button(295, 238, 'btn_close', clickedClose, this, 1, 0, 2);
+    btn_close.anchor.setTo(0.5, 0.5);
+
+    group_menu.add(spr_menuBG);
+    group_menu.add(spr_menuMonitor);
+    group_menuSubgroup.add(txt_title);
+    group_menuSubgroup.add(txt_win);
+    group_menuSubgroup.add(txt_playAgain);
+    group_menuSubgroup.add(btn_easy);
+    group_menuSubgroup.add(btn_help);
+    group_menuSubgroup.add(btn_medium);
+    group_menuSubgroup.add(btn_hard);
+    group_menuCredits.add(txt_creditsTitle);
+    group_menuCredits.add(txt_credits);
+    group_menuCredits.add(txt_creditsLink);
+    group_menuCredits.add(btn_close);
+    group_menuCredits.visible = false;
+    group_menu.add(group_menuSubgroup);
+    group_menu.add(group_menuCredits);
+}
+
+function update()
+{
+    //monitor animation?
+}
+
+function clickedHelp()
+{
+    group_menuSubgroup.visible = false;
+    group_menuCredits.visible = true;
+}
+
+function clickedClose()
+{
+    group_menuSubgroup.visible = true;
+    group_menuCredits.visible = false;
+}
+
+function clickedEasy()
+{
+    gameSize = "easy";
+    txt_win.setText("");
+    toggleMenu(false);
+    setupGame();
+}
+
+function clickedMedium()
+{
+    gameSize = "medium";
+    txt_win.setText("");
+    toggleMenu(false);
+    setupGame();
+}
+
+function clickedHard()
+{
+    gameSize = "hard";
+    txt_win.setText("");
+    toggleMenu(false);
+    setupGame();
+}
+
+function clickedNew()
+{
+    if(ingame)
+    {
+        toggleMenu(true);
+        ingame = false;
+    }
+}
+
+function clickedReset()
+{
+    if(ingame)
+    {
+        setupGame();
+    }
+}
+
+function pickedColor(vial)
+{
+    if(ingame && numStepsRemaining > 0)
+    {
+        currentColor = vial.key.toString().substr(5, vial.key.toString().length-1);
+        numStepsRemaining--;
+        txt_score.setText(numStepsRemaining+"/"+totalSteps);
+        recursiveRemoveCells(0, 0);
+        uncheckCells();
+        checkForEnd();
+    }
+}
+
+function toggleMenu(show)
+{
+    group_menu.visible = show;
+    toggleButtonInput(btn_new, !show);
+    toggleButtonInput(btn_reset, !show);
+}
+
+function toggleButtonInput(btn, enable)
+{
+    btn.frame = 0;
+    btn.inputEnabled = enable;
+    btn.input.useHandCursor = enable;
+}
+
+function setupGame()
+{
+    switch(gameSize){
+        case "easy":
+            lengthCellSide = 24;
+            numPerSide = 14;
+            totalSteps = 32;
+            break;
+        case "medium":
+            lengthCellSide = 16;
+            numPerSide = 21;
+            totalSteps = 50;
+            break;
+        case "hard":
+            lengthCellSide = 12;
+            numPerSide = 28;
+            totalSteps = 70;
+            break;
+    }
+    
+    numStepsRemaining = totalSteps;
+    numTilesRemaining = numPerSide * numPerSide;
+    scoreText = numStepsRemaining+"/"+totalSteps;
+    
+    createGrid();
+}
+
+function createGrid()
+{
+    if(group_cells.length > 0)
+    {
+        group_cells.removeAll(true);
+    }
+
+    cellsArray = {};
+
+    for(var c = 0; c < numPerSide; c++)
+    {
+        for(var r = 0; r < numPerSide; r++)
+        {
+            var randomColor = Math.round(Math.random() * 6);
+            var tile = new Tile(game, c*lengthCellSide, r*lengthCellSide, 'cells'+lengthCellSide, colorsArray[randomColor], randomColor+1, "t_"+c+"_"+r);
+            group_cells.add(tile);
+            cellArray["t_"+c+"_"+r] = tile;
+        }
+    }
+
+    ingame = true;
+    currentColor = cellArray["t_0_0"].color;
+    recursiveRemoveCells(0, 0);
+    uncheckCells();
+}
+
+function recursiveRemoveCells(OX, OY)
+{
+    var cellName = 't_'+OX+'_'+OY;
+    var thisCell = cellArray[cellName];
+    thisCell.checked = true;
+    
+    if(thisCell.visible && thisCell.color == currentColor)
+    {
+        thisCell.visible = false;
+        numTilesRemaining--;
+    }
+    
+    if(!thisCell.visible)
+    {
+        //Left
+        if(OX > 0)
+        {
+            if(!cellArray["t_"+(OX-1)+"_"+OY].checked)
+            {
+                recursiveRemoveCells(OX-1, OY);
+            }
+        }
+        
+        //Right
+        if(OX < numPerSide-1)
+        {
+            if(!cellArray["t_"+(OX+1)+"_"+OY].checked)
+            {
+                recursiveRemoveCells(OX+1, OY);
+            }
+        }
+        
+        //Up
+        if(OY > 0)
+        {
+            if(!cellArray["t_"+OX+"_"+(OY-1)].checked)
+            {
+                recursiveRemoveCells(OX, OY-1);
+            }
+        }
+        
+        //Down
+        if(OY < numPerSide-1)
+        {
+            if(!cellArray["t_"+OX+"_"+(OY+1)].checked)
+            {
+                recursiveRemoveCells(OX, OY+1);
+            }
+        }
+    }
+}
+
+function uncheckCells()
+{
+    group_cells.forEach(function(cell){
+        cell.checked = false;
+    })
+}
+
+function checkForEnd()
+{
+    if(numTilesRemaining > 0 && numStepsRemaining <= 0)
+    {
+        //lose
+        ingame = false;
+        txt_title.setText("GAME OVER");
+        txt_win.setText("The patient died!");
+        toggleMenu(true);
+    }else if(numTilesRemaining <= 0 && numStepsRemaining >= 0){
+        //win
+        ingame = false;
+        txt_title.setText("GAME OVER");
+        txt_win.setText("The patient is cured!");
+        toggleMenu(true);
+    }
+}
+
+</script>
+
+</body>
+</html>
