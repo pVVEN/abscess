@@ -51,6 +51,44 @@ var Tile = function(game, x, y, img, color, frame, name)
 Tile.prototype = Object.create(Phaser.Sprite.prototype);
 Tile.prototype.constructor = Tile;
 
+/*****************************************************
+Custom LabelButton class by Xeke and Mand, found here: http://www.html5gamedevs.com/topic/2847-button-text/
+******************************************************/
+var LabelButton = function(game, x, y, key, label, callback, callbackContext, overFrame, outFrame, downFrame, upFrame)
+{
+    Phaser.Button.call(this, game, x, y, key, callback,
+        callbackContext, overFrame, outFrame, downFrame, upFrame);
+ 
+    //Style how you wish...
+    this.style = {
+        // 'font': '10px Arial',
+        // 'fill': 'black'
+        'font': '12px Arial',
+        'fill': '#FF6600'
+    };
+    this.anchor.setTo( 0.5, 0.5 );
+    this.label = new Phaser.Text(game, 0, 0, label, this.style);
+ 
+    //puts the label in the center of the button
+    this.label.anchor.setTo( 0.5, 0.5 );
+ 
+    this.addChild(this.label);
+    this.setLabel( label );
+ 
+    //adds button to game
+    game.add.existing( this );
+};
+ 
+LabelButton.prototype = Object.create(Phaser.Button.prototype);
+LabelButton.prototype.constructor = LabelButton;
+LabelButton.prototype.setLabel = function( label ) {
+   this.label.setText(label);
+};
+LabelButton.prototype.setStyle = function(style){
+    this.label.setStyle(style);
+};
+/*** END CUSTOM LABELBUTTON CODE ***/
+
 function preload()
 {
     game.load.image('menu', 'img/menu.png');
@@ -76,7 +114,7 @@ function preload()
     game.load.spritesheet('cells16', 'img/cells16.png', 16, 16);
     game.load.spritesheet('cells24', 'img/cells24.png', 24, 24);
 
-    game.load.image('screenshot', 'img/screenshot.png');
+    //game.load.image('screenshot', 'img/screenshot.png');
 }
 
 function create()
@@ -127,7 +165,13 @@ function create()
 
     txt_title = game.add.text(300, 83, 'ABSCESS', { fontSize: '24px', fill: '#00FFCC', align: 'center' });
     txt_title.anchor.setTo(0.5, 0.5);
-    // NEED A BAR GOING UNDER THE TEXT FOR AN UNDERLINE
+
+    var bmd_menuUnderline = game.add.bitmapData(140, 2);
+    bmd_menuUnderline.ctx.beginPath();
+    bmd_menuUnderline.ctx.rect(0, 0, 140, 2);
+    bmd_menuUnderline.ctx.fillStyle = "#00FFCC";
+    bmd_menuUnderline.ctx.fill();
+    var gfx_menuUnderline = game.add.sprite(230, 94, bmd_menuUnderline);
 
     txt_win = game.add.text(300, 133, "Choose Difficulty", { fontSize: '32px', fill: '#FF6600', align: 'center' });
     txt_win.anchor.setTo(0.5, 0.5);
@@ -144,14 +188,52 @@ function create()
     btn_hard.anchor.setTo(0.5, 0.5);
 
     var txt_creditsTitle = game.add.text(300, 83, "ABSCESS", { fontSize: '24px', fill: '#00FFCC', align: 'center' });
-    var txt_credits = game.add.text(300, 133, "Abscess is (C)\n2011 by Owen\nMcNamara", { fontSize: '16px', fill: '#00FFCC', align: 'center' });
-    var txt_creditsLink = game.add.text(300, 198, "http://www.owencm.com", { fontSize: '16px', align: 'center' });
+    txt_creditsTitle.anchor.setTo(0.5, 0.5);
+
+    var bmd_creditsUnderline = game.add.bitmapData(140, 2);
+    bmd_creditsUnderline.ctx.beginPath();
+    bmd_creditsUnderline.ctx.rect(0, 0, 140, 2);
+    bmd_creditsUnderline.ctx.fillStyle = "#00FFCC";
+    bmd_creditsUnderline.ctx.fill();
+    var gfx_creditsUnderline = game.add.sprite(230, 94, bmd_creditsUnderline);
+
+    var txt_credits = game.add.text(300, 144, "Abscess is (C)\n2011 by Owen\nMcNamara", { fontSize: '16px', fill: '#00FFCC', align: 'center' });
+    txt_credits.anchor.setTo(0.5, 0.5);
+
+    // var txt_creditsLink = game.add.text(0, 0, "http://www.owencm.com", { fontSize: '16px', align: 'center', fill: '#fff' });
+    // txt_creditsLink.anchor.setTo(0.5, 0.5);
+    // var bmd_creditsLink = game.add.bitmapData(200, 10);
+    // bmd_creditsLink.draw(txt_creditsLink, 0, 0);//, null, null, 'destination-out');
+    // var spr_creditsLink = game.add.sprite(0, 0, bmd_creditsLink);
+    // spr_creditsLink.alpha = 0.5;
+    // var btn_creditsLink = game.add.button(300, 198, 'spr_creditsLink', function() {
+    //     window.open("http://www.google.com", "_blank");
+    // }, this);
+    // btn_creditsLink.anchor.setTo(0.5, 0.5);
+
+    // var bmt_creditsLink = game.add.bitmapText(0, 0, 'Arial', 'http://www.owencm.com', 14);
+    // var spr_creditsLink = game.add.sprite(0, 0, bmt_creditsLink);
+    // spr_creditsLink.alpha = 0.5;
+    // var btn_creditsLink = game.add.button(300, 198, spr_creditsLink, function() {
+    //     window.open("http://www.google.com", "_blank");
+    // }, this);
+    // btn_creditsLink.anchor.setTo(0.5, 0.5);
+
+    var btn_creditsLink = new LabelButton(this.game, 300, 198, "", "http://www.owencm.com", function() {
+        window.open("http://www.owencm.com", "_blank");
+    }, this);
+    btn_creditsLink.setStyle({
+        'font': '14px Arial',
+        'fill': '#00FFCC'
+    });
+
     btn_close = game.add.button(295, 238, 'btn_close', clickedClose, this, 1, 0, 2);
     btn_close.anchor.setTo(0.5, 0.5);
 
     group_menu.add(spr_menuBG);
     group_menu.add(spr_menuMonitor);
     group_menuSubgroup.add(txt_title);
+    group_menuSubgroup.add(gfx_menuUnderline);
     group_menuSubgroup.add(txt_win);
     group_menuSubgroup.add(txt_playAgain);
     group_menuSubgroup.add(btn_easy);
@@ -159,8 +241,10 @@ function create()
     group_menuSubgroup.add(btn_medium);
     group_menuSubgroup.add(btn_hard);
     group_menuCredits.add(txt_creditsTitle);
+    group_menuCredits.add(gfx_creditsUnderline);
     group_menuCredits.add(txt_credits);
-    group_menuCredits.add(txt_creditsLink);
+    //group_menuCredits.add(txt_creditsLink);
+    group_menuCredits.add(btn_creditsLink);
     group_menuCredits.add(btn_close);
     group_menuCredits.visible = false;
     group_menu.add(group_menuSubgroup);
