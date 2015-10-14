@@ -15,12 +15,10 @@
 <script type="text/javascript">
 
 /*
-- reset steps remaining (and possibly other stuff) when win/lose
-- underline for txt_title and txt_creditsTitle
-- black rectangle border for group_cells
+- disable vials and blood cell buttons while menu is up (from beginning)
+- add text to menu so players can see how many steps they had left
 - tweens for vials
 - something to make sure the vial you click is the one you want? turn off other vials when hovering over one?
-- credits screen
 - moving animation for monitor screen - look at masking
 - fix fonts/font sizes
 - mobile version - scaling?
@@ -61,8 +59,6 @@ var LabelButton = function(game, x, y, key, label, callback, callbackContext, ov
  
     //Style how you wish...
     this.style = {
-        // 'font': '10px Arial',
-        // 'fill': 'black'
         'font': '12px Arial',
         'fill': '#FF6600'
     };
@@ -74,6 +70,12 @@ var LabelButton = function(game, x, y, key, label, callback, callbackContext, ov
  
     this.addChild(this.label);
     this.setLabel( label );
+
+    /*
+    this.gfx_btnUnderline = game.add.group();
+    this.setUnderline();
+    this.addChild(this.gfx_btnUnderline);
+    */
  
     //adds button to game
     game.add.existing( this );
@@ -83,10 +85,28 @@ LabelButton.prototype = Object.create(Phaser.Button.prototype);
 LabelButton.prototype.constructor = LabelButton;
 LabelButton.prototype.setLabel = function( label ) {
    this.label.setText(label);
+   //this.setUnderline();
 };
 LabelButton.prototype.setStyle = function(style){
+    this.style = style;
     this.label.setStyle(style);
+    //this.setUnderline();
 };
+/*
+LabelButton.prototype.setUnderline = function(){
+    var bmd_btnUnderline = game.add.bitmapData(this.label.width, 2);
+    bmd_btnUnderline.ctx.beginPath();
+    bmd_btnUnderline.ctx.rect(0, 0, this.label.width, 2);
+    bmd_btnUnderline.ctx.fillStyle = this.style.fill;//"#00FFCC";
+    console.log("setUnderline() this.style.fill: "+this.style.fill);
+    bmd_btnUnderline.ctx.fill();
+    var tempSpr = game.add.sprite(-(this.label.width/2), this.label.height-13, bmd_btnUnderline);
+    console.log("tempSpr: "+tempSpr);
+    this.gfx_btnUnderline.add(tempSpr);
+    console.log(this.gfx_btnUnderline.children.length);
+    //this.gfx_btnUnderline.updateCache();
+};
+*/
 /*** END CUSTOM LABELBUTTON CODE ***/
 
 function preload()
@@ -113,8 +133,6 @@ function preload()
     game.load.spritesheet('cells12', 'img/cells12.png', 12, 12);
     game.load.spritesheet('cells16', 'img/cells16.png', 16, 16);
     game.load.spritesheet('cells24', 'img/cells24.png', 24, 24);
-
-    //game.load.image('screenshot', 'img/screenshot.png');
 }
 
 function create()
@@ -141,22 +159,21 @@ function create()
 
     game.add.sprite(254, 4, 'whitebloodcells');
 
+    var bmd_blackBorder = game.add.bitmapData(340, 340);
+    bmd_blackBorder.rect(0, 0, 340, 340);
+    bmd_blackBorder.clear(2, 2, 336, 336);
+    game.add.sprite(254, 4, bmd_blackBorder);
+
     group_cells = game.add.group();
     group_cells.x = 256;
     group_cells.y = 6;
-
-    // NEED A BLACK RECTANGLE BORDER TO GO OVER THE CELLS GROUP
-
 
     group_menu = game.add.group();
     group_menuSubgroup = game.add.group();
     group_menuCredits = game.add.group();
 
     var bmd_menuBG = game.add.bitmapData(600, 350);
-    bmd_menuBG.ctx.beginPath();
-    bmd_menuBG.ctx.rect(0, 0, 600, 350);
-    bmd_menuBG.ctx.fillStyle = '#000';
-    bmd_menuBG.ctx.fill();
+    bmd_menuBG.rect(0, 0, 600, 350);
     var spr_menuBG = game.add.sprite(0, 0, bmd_menuBG);
     spr_menuBG.alpha = 0.5;
 
@@ -167,10 +184,9 @@ function create()
     txt_title.anchor.setTo(0.5, 0.5);
 
     var bmd_menuUnderline = game.add.bitmapData(140, 2);
-    bmd_menuUnderline.ctx.beginPath();
-    bmd_menuUnderline.ctx.rect(0, 0, 140, 2);
-    bmd_menuUnderline.ctx.fillStyle = "#00FFCC";
-    bmd_menuUnderline.ctx.fill();
+    bmd_menuUnderline.rect(0, 0, 140, 2);
+    var clr_menuUnderline = Phaser.Color.hexToRGB("#00FFCC");
+    bmd_menuUnderline.fill(Phaser.Color.getRed(clr_menuUnderline), Phaser.Color.getGreen(clr_menuUnderline), Phaser.Color.getBlue(clr_menuUnderline), 1);
     var gfx_menuUnderline = game.add.sprite(230, 94, bmd_menuUnderline);
 
     txt_win = game.add.text(300, 133, "Choose Difficulty", { fontSize: '32px', fill: '#FF6600', align: 'center' });
@@ -191,40 +207,20 @@ function create()
     txt_creditsTitle.anchor.setTo(0.5, 0.5);
 
     var bmd_creditsUnderline = game.add.bitmapData(140, 2);
-    bmd_creditsUnderline.ctx.beginPath();
-    bmd_creditsUnderline.ctx.rect(0, 0, 140, 2);
-    bmd_creditsUnderline.ctx.fillStyle = "#00FFCC";
-    bmd_creditsUnderline.ctx.fill();
+    bmd_creditsUnderline.rect(0, 0, 140, 2);
+    var clr_creditsUnderline = Phaser.Color.hexToRGB("#00FFCC");
+    bmd_creditsUnderline.fill(Phaser.Color.getRed(clr_creditsUnderline), Phaser.Color.getGreen(clr_creditsUnderline), Phaser.Color.getBlue(clr_creditsUnderline), 1);
     var gfx_creditsUnderline = game.add.sprite(230, 94, bmd_creditsUnderline);
 
     var txt_credits = game.add.text(300, 144, "Abscess is (C)\n2011 by Owen\nMcNamara", { fontSize: '16px', fill: '#00FFCC', align: 'center' });
     txt_credits.anchor.setTo(0.5, 0.5);
-
-    // var txt_creditsLink = game.add.text(0, 0, "http://www.owencm.com", { fontSize: '16px', align: 'center', fill: '#fff' });
-    // txt_creditsLink.anchor.setTo(0.5, 0.5);
-    // var bmd_creditsLink = game.add.bitmapData(200, 10);
-    // bmd_creditsLink.draw(txt_creditsLink, 0, 0);//, null, null, 'destination-out');
-    // var spr_creditsLink = game.add.sprite(0, 0, bmd_creditsLink);
-    // spr_creditsLink.alpha = 0.5;
-    // var btn_creditsLink = game.add.button(300, 198, 'spr_creditsLink', function() {
-    //     window.open("http://www.google.com", "_blank");
-    // }, this);
-    // btn_creditsLink.anchor.setTo(0.5, 0.5);
-
-    // var bmt_creditsLink = game.add.bitmapText(0, 0, 'Arial', 'http://www.owencm.com', 14);
-    // var spr_creditsLink = game.add.sprite(0, 0, bmt_creditsLink);
-    // spr_creditsLink.alpha = 0.5;
-    // var btn_creditsLink = game.add.button(300, 198, spr_creditsLink, function() {
-    //     window.open("http://www.google.com", "_blank");
-    // }, this);
-    // btn_creditsLink.anchor.setTo(0.5, 0.5);
 
     var btn_creditsLink = new LabelButton(this.game, 300, 198, "", "http://www.owencm.com", function() {
         window.open("http://www.owencm.com", "_blank");
     }, this);
     btn_creditsLink.setStyle({
         'font': '14px Arial',
-        'fill': '#00FFCC'
+        'fill': '#006CFF'
     });
 
     btn_close = game.add.button(295, 238, 'btn_close', clickedClose, this, 1, 0, 2);
@@ -358,7 +354,7 @@ function setupGame()
     
     numStepsRemaining = totalSteps;
     numTilesRemaining = numPerSide * numPerSide;
-    scoreText = numStepsRemaining+"/"+totalSteps;
+    txt_score.setText(numStepsRemaining+"/"+totalSteps);
     
     createGrid();
 }
