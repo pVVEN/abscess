@@ -15,13 +15,12 @@
 <script type="text/javascript">
 
 /*
-- disable vials and blood cell buttons while menu is up (from beginning)
-- add text to menu so players can see how many steps they had left
 - tweens for vials
 - something to make sure the vial you click is the one you want? turn off other vials when hovering over one?
 - moving animation for monitor screen - look at masking
 - fix fonts/font sizes
 - mobile version - scaling?
+- fix onUp/onOver button states after clicking
 */
 
 var game = new Phaser.Game(600, 350, Phaser.AUTO, '', { preload: preload, create: create, update: update });
@@ -33,7 +32,7 @@ var gameSize, lengthCellSide, numPerSide, totalSteps, numStepsRemaining, numTile
 
 var btn_new, btn_reset, btn_close, btn_help, btn_easy, btn_medium, btn_hard;
 var vial_red, vial_orange, vial_yellow, vial_green, vial_teal, vial_blue, vial_purple;
-var txt_title, txt_score, txt_win, txt_playAgain;
+var txt_title, txt_score, txt_win, txt_playAgain, txt_stepsRemaining;
 var group_cells, group_menu, group_menuSubgroup, group_menuCredits;
 
 var Tile = function(game, x, y, img, color, frame, name)
@@ -191,6 +190,8 @@ function create()
 
     txt_win = game.add.text(300, 133, "Choose Difficulty", { fontSize: '32px', fill: '#FF6600', align: 'center' });
     txt_win.anchor.setTo(0.5, 0.5);
+    txt_stepsRemaining = game.add.text(300, 168, "0 steps left!", { fontSize: '16px', fill: '#00FFCC', align: 'center' });
+    txt_stepsRemaining.anchor.setTo(0.5, 0.5);
     txt_playAgain = game.add.text(300, 198, 'New game?', { fontSize: '16px', fill: '#00FFCC', align: 'center' });
     txt_playAgain.anchor.setTo(0.5, 0.5);
 
@@ -231,6 +232,7 @@ function create()
     group_menuSubgroup.add(txt_title);
     group_menuSubgroup.add(gfx_menuUnderline);
     group_menuSubgroup.add(txt_win);
+    group_menuSubgroup.add(txt_stepsRemaining);
     group_menuSubgroup.add(txt_playAgain);
     group_menuSubgroup.add(btn_easy);
     group_menuSubgroup.add(btn_help);
@@ -245,6 +247,9 @@ function create()
     group_menuCredits.visible = false;
     group_menu.add(group_menuSubgroup);
     group_menu.add(group_menuCredits);
+
+    toggleMenu(false);
+    toggleMenu(true);
 }
 
 function update()
@@ -323,6 +328,15 @@ function toggleMenu(show)
     group_menu.visible = show;
     toggleButtonInput(btn_new, !show);
     toggleButtonInput(btn_reset, !show);
+    toggleButtonInput(vial_red, !show);
+    toggleButtonInput(vial_orange, !show);
+    toggleButtonInput(vial_yellow, !show);
+    toggleButtonInput(vial_green, !show);
+    toggleButtonInput(vial_teal, !show);
+    toggleButtonInput(vial_blue, !show);
+    toggleButtonInput(vial_purple, !show);
+
+    txt_stepsRemaining.visible = false;
 }
 
 function toggleButtonInput(btn, enable)
@@ -452,13 +466,19 @@ function checkForEnd()
         ingame = false;
         txt_title.setText("GAME OVER");
         txt_win.setText("The patient died!");
+        txt_win.setStyle({fontSize: "32px", fill: txt_win.fill});
+        txt_stepsRemaining.setText(numStepsRemaining+" steps remaining!");
         toggleMenu(true);
+        txt_stepsRemaining.visible = true;
     }else if(numTilesRemaining <= 0 && numStepsRemaining >= 0){
         //win
         ingame = false;
         txt_title.setText("GAME OVER");
         txt_win.setText("The patient is cured!");
+        txt_win.setStyle({fontSize: "26px", fill: txt_win.fill});
+        txt_stepsRemaining.setText(numStepsRemaining+" steps remaining!");
         toggleMenu(true);
+        txt_stepsRemaining.visible = true;
     }
 }
 
