@@ -13,8 +13,11 @@ you only have so much vaccine to administer!
 *******************************************************************/
 
 /*
+- fix post-mortem page to not use in-line styles
+- fix website to make hrefs refer to top level
+- change death message to show number of tiles remaining
+- fix onUp/onOver button states after clicking - reset to first frame before hiding
 - mobile version - scaling?
-- fix onUp/onOver button states after clicking
 - add sounds, music
 */
 

@@ -1,0 +1,75 @@
+<!doctype html> 
+<html lang="en"> 
+    <head> 
+        <meta charset="UTF-8" />
+        <title>Abscess</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <!-- Bootstrap -->
+        <link href="/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <!--<link href="css/responsive-video.css" rel="stylesheet">-->
+        <link href="/css/styles.css" rel="stylesheet">
+    </head>
+    <body>
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand borderRight" href="http://www.owencm.com/">OwenCM.com</a>
+                </div>
+                
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li><a href="http://www.owencm.com/"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-briefcase"></span> Projects <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/quadmark.html">Quadmark</a></li>
+                                <li><a href="/gcu.html">Grand Canyon University</a></li>
+                                <li><a href="/inxsol.html">inXsol, LLC</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="/games.html"><span class="glyphicon glyphicon-tower"></span> Games</a></li>
+                        <li><a href="/contact.html"><span class="glyphicon glyphicon-envelope"></span> Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Begin page content -->
+        <div id="content" class="container">
+            <div id="header" class="page-header">
+                <h1>Games <small>and Other Projects</small></h1>
+            </div>
+            <p></p>
+            <div id="game" style="text-align: center;">
+                <iframe src="abscess_game.html" name="abscess" width="600" height="350" frameborder="0" scrolling="no">
+                    <p>Your browser does not support iframes. Try running the game in a new tab instead. <a href="abscess_game.html" target="_blank">CLICK HERE</a></p>
+                </iframe>
+            </div>
+            <p>&nbsp;</p>
+            <p style="font-style: italic;"><strong style="font-style: normal;">Description:</strong> Take on the role of a doctor in a third-world country, caring for a patient suffering from multiple diseases. Match the vials of vaccines available to the diseases in the patient's system until only white blood cells remain. Choose wisely, as there is a limited amount of vaccine available!</p>
+            </p>
+            <p>This game originally started life as a Flash game, which you can download <a href="/downloads/abscess.zip">here</a> (ZIP, 10.14 MB), or <a href="/downloads/abscess_full.zip">here</a> for the game with Flash source files (ZIP, 24.64 MB). When I decided to get into HTML5 game development, I thought porting this game would be a good way to get my feet wet. I considered trying to work with the canvas directly, but ultimately decided on using the <a href="http://phaser.io/" target="_blank">Phaser JS</a> framework instead.</p>
+            <p>Development was smooth, overall, and it took about 3 days total time to get it to what I felt was a complete state. I did hit some snags in a couple places, and had to resort to "what works for now" rather than "the right way to do it" more than I'd like. For instance, the text rendering classes available didn't have the ability to underline the text. I tried writing a new class to leverage the existing Label class and add some drawing code for the underline, but then ran into the problem of not knowing how to update the length of the line if the text changed. It became too complicated, so I switched to drawing a new sprite for the line below the text when the game is instantiated. Similarly, I needed a rectangle with a 2-pixel stroke and no fill to act as a border for the tiles. At first I tried using a sprite's "ctr" property, which referred to its canvas context, as the object to draw graphics too, but I couldn't seem to get anything to render. Then I tried using a Graphics object, but ran into more issues. Finally, I stumbled on a more simple solution: draw a black rectangle in a BitmapData object, then draw another, smaller rectangle using the clear() method to "erase" the black rectangle's fill. Only four lines of code, but I still feel there could be a simpler way.</p>
+            <p>There were other quirks that I came across. Mouse detection will apparently pass through objects, as I had to write code to toggle the interactivity of the New and Reset buttons, as well as all of the vials, whenever I displayed or hid the menu. Buttons remember their state when they're clicked and then made invisible, requiring a reset to the first frame before they're shown again. A lot of these problems are mostly due to the fact that Flash has a drawing and animation engine built into it, so you can get away with some tricks by phsyically manipulating the graphics. Adapting the code for the core functionality took the least amount of time. I owe that to my familiarity with the old Flixel game framework (which had the same developer as Phaser) for Flash, and to ActionScript 3's similarity to Javascript. Phaser has proven to be a worthy successor to Flixel, and I intend to use it in many more game projects.</p>
+            <p>Next step is to learn how to adapt this for mobile!</p>
+        </div>
+        
+        <div id="footer">
+            <div class="container">
+                <p id="footer-text" class="text-muted">2014 &copy; Owen McNamara. All work contained on this site is private property unless otherwise indicated.</p>
+            </div>
+        </div>
+        
+        <!-- NOTHING GOES PAST THIS LINE -->
+        <script src="http://code.jquery.com/jquery.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+        <script src="/js/scripts.js"></script>
+    </body>
+</html>
