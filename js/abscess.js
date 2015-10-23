@@ -13,10 +13,6 @@ you only have so much vaccine to administer!
 *******************************************************************/
 
 /*
-- fix post-mortem page to not use in-line styles
-- fix website to make hrefs refer to top level
-- change death message to show number of tiles remaining
-- fix onUp/onOver button states after clicking - reset to first frame before hiding
 - mobile version - scaling?
 - add sounds, music
 */
@@ -364,13 +360,17 @@ function update()
 
 function clickedHelp()
 {
-    group_menuSubgroup.visible = false;
+    toggleButtonInput(btn_close, true);
     group_menuCredits.visible = true;
+    group_menuSubgroup.visible = false;
+    toggleButtonInput(btn_help, false);
 }
 
 function clickedClose()
 {
     group_menuSubgroup.visible = true;
+    toggleButtonInput(btn_help, true);
+    toggleButtonInput(btn_close, false);
     group_menuCredits.visible = false;
 }
 
@@ -431,6 +431,10 @@ function pickedColor(vial)
 function toggleMenu(show)
 {
     group_menu.visible = show;
+    btn_easy.frame = 0;
+    btn_medium.frame = 0;
+    btn_hard.frame = 0;
+
     toggleButtonInput(btn_new, !show);
     toggleButtonInput(btn_reset, !show);
     toggleButtonInput(vial_red, !show);
@@ -446,9 +450,9 @@ function toggleMenu(show)
 
 function toggleButtonInput(btn, enable)
 {
-    btn.frame = 0;
     btn.inputEnabled = enable;
     btn.input.useHandCursor = enable;
+    btn.frame = 0;
 }
 
 function setupGame()
@@ -560,7 +564,7 @@ function uncheckCells()
 {
     group_cells.forEach(function(cell){
         cell.checked = false;
-    })
+    });
 }
 
 function checkForEnd()
@@ -572,7 +576,7 @@ function checkForEnd()
         txt_title.setText("GAME OVER");
         txt_win.setText("The patient died!");
         txt_win.setStyle({fontSize: "32px", fill: txt_win.fill});
-        txt_stepsRemaining.setText(numStepsRemaining+" steps remaining!");
+        txt_stepsRemaining.setText(numTilesRemaining+" viruses remaining!");
         toggleMenu(true);
         txt_stepsRemaining.visible = true;
     }else if(numTilesRemaining <= 0 && numStepsRemaining >= 0){
