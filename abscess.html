@@ -44,16 +44,16 @@
         <!-- Begin page content -->
         <div id="content" class="container">
             <div id="header" class="page-header">
-                <h1>Games <small>and Other Projects</small></h1>
+                <h1>Abscess</h1>
             </div>
             <p></p>
-            <div id="game" style="text-align: center;">
-                <iframe src="abscess_game.html" name="abscess" width="600" height="350" frameborder="0" scrolling="no">
+            <div id="game">
+                <iframe src="abscess_game.html" name="abscess" frameborder="0" scrolling="no"><!-- width="600" height="350" -->
                     <p>Your browser does not support iframes. Try running the game in a new tab instead. <a href="abscess_game.html" target="_blank">CLICK HERE</a></p>
                 </iframe>
             </div>
             <p>&nbsp;</p>
-            <p style="font-style: italic;"><strong style="font-style: normal;">Description:</strong> Take on the role of a doctor in a third-world country, caring for a patient suffering from multiple diseases. Match the vials of vaccines available to the diseases in the patient's system until only white blood cells remain. Choose wisely, as there is a limited amount of vaccine available!</p>
+            <p class="font-italics"><strong class="font-normal">Description:</strong> Take on the role of a doctor in a third-world country, caring for a patient suffering from multiple diseases. Match the vials of vaccines available to the diseases in the patient's system until only white blood cells remain. Choose wisely, as there is a limited amount of vaccine available!</p>
             </p>
             <p>This game originally started life as a Flash game, which you can download <a href="/downloads/abscess.zip">here</a> (ZIP, 10.14 MB), or <a href="/downloads/abscess_full.zip">here</a> for the game with Flash source files (ZIP, 24.64 MB). When I decided to get into HTML5 game development, I thought porting this game would be a good way to get my feet wet. I considered trying to work with the canvas directly, but ultimately decided on using the <a href="http://phaser.io/" target="_blank">Phaser JS</a> framework instead.</p>
             <p>Development was smooth, overall, and it took about 3 days total time to get it to what I felt was a complete state. I did hit some snags in a couple places, and had to resort to "what works for now" rather than "the right way to do it" more than I'd like. For instance, the text rendering classes available didn't have the ability to underline the text. I tried writing a new class to leverage the existing Label class and add some drawing code for the underline, but then ran into the problem of not knowing how to update the length of the line if the text changed. It became too complicated, so I switched to drawing a new sprite for the line below the text when the game is instantiated. Similarly, I needed a rectangle with a 2-pixel stroke and no fill to act as a border for the tiles. At first I tried using a sprite's "ctr" property, which referred to its canvas context, as the object to draw graphics too, but I couldn't seem to get anything to render. Then I tried using a Graphics object, but ran into more issues. Finally, I stumbled on a more simple solution: draw a black rectangle in a BitmapData object, then draw another, smaller rectangle using the clear() method to "erase" the black rectangle's fill. Only four lines of code, but I still feel there could be a simpler way.</p>
